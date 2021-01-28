@@ -1,74 +1,84 @@
 package org.example;
 
-import org.example.Entity.DirectoryService;
+import org.example.Entity.*;
 
-import java.sql.Date;
-import java.sql.SQLException;
 import java.util.ArrayList;
 
 
 public class App {
 
-    public static void main(String[] args)  {
-        String field1 = "name";
-        String field2 = "lastName";
-        String field3 = "count";            //ключи, названия полей
-        String field4 = "date";
-        String field5 = "late";
+    public static void main(String[] args) {
 
-        ArrayList<String> arraystr = new ArrayList<>();
-        ArrayList<String> arraystrrs = new ArrayList<>();
-        ArrayList<Integer> arrayListint = new ArrayList<>();            //контейенеры для значений
-        ArrayList<java.sql.Date> arrayListdates = new ArrayList<>();
-        ArrayList<Boolean> arrayListbools = new ArrayList<>();
+        ArrayList<Field> fields = new ArrayList<>();
+        fields.add(new Field(1, "name", Type.STRING));                                ///поля первой таблицы
+        fields.add(new Field(2, "surname", Type.STRING));
+        fields.add(new Field(3, "date", Type.DATE));
 
+        ArrayList<Field> fields1 = new ArrayList<>();
+        fields1.add(new Field(4, "name", Type.STRING));
+        fields1.add(new Field(5, "Date", Type.DATE));                               //поля второй таблицы
+        fields1.add(new Field(6, "count", Type.INTEGER));
+        fields1.add(new Field(7, "verify", Type.BOOLEAN));
 
-        arraystr.add("Nikita");
-        arraystrrs.add("qwert");
-        arrayListint.add(2);                      //1 запись
-        arrayListdates.add(Date.valueOf("2012-12-11"));
-        arrayListbools.add(true);
+        ArrayList<Cell<?>> rowFirst = new ArrayList<>();
+        rowFirst.add(new Cell<>(1, "Nikita"));
+        rowFirst.add(new Cell<>(2, "Obukhov"));                                 // 1-я строка первой таблицы
+        rowFirst.add(new Cell<>(3, java.sql.Date.valueOf("1998-11-11")));
 
-        arraystr.add("Don");
-        arraystrrs.add("qwertyy");                  //2 запись
-        arrayListint.add(1);
-        arrayListdates.add(Date.valueOf("2014-11-10"));
-        arrayListbools.add(true);
-
-        arraystr.add("Diana");
-        arraystrrs.add("room");                  //3 запись
-        arrayListint.add(0);
-        arrayListdates.add(Date.valueOf("2020-11-10"));
-        arrayListbools.add(false);
-
-        //создать новый справочник
-
-        DirectoryService d = new DirectoryService();
-        d.getDirectory().put(field1, new ArrayList<String>(arraystr));
-        d.getDirectory().put(field2, new ArrayList<String>(arraystrrs));
-        d.getDirectory().put(field3, new ArrayList<Integer>(arrayListint));         //создание справочника
-        d.getDirectory().put(field4, new ArrayList<java.sql.Date>(arrayListdates));
-        d.getDirectory().put(field5, new ArrayList<Boolean>(arrayListbools));
-        d.getType();
+        ArrayList<Cell<?>> rowTab = new ArrayList<>();
+        rowTab.add(new Cell<>(7, "elon"));
+        rowTab.add(new Cell<>(8, java.sql.Date.valueOf("1980-10-10")));                    //1-я строка второй таблицы
+        rowTab.add(new Cell<>(9, 5));
+        rowTab.add(new Cell<>(10, true));
 
 
-        d.setName("peoples"); //изменить имя справочника
+        ArrayList<Cell<?>> rowSecond = new ArrayList<>();
+        rowSecond.add(new Cell<>(4, "Vasya"));
+        rowSecond.add(new Cell<>(5, "pupkin"));                  // 2-я строка первой таблицы
+        rowSecond.add(new Cell<>(6, java.sql.Date.valueOf("2000-11-12")));
 
-        d.setField("lastName", "surname"); //изменить поле
+        ArrayList<Cell<?>> rowsrcc = new ArrayList<>();
+        rowsrcc.add(new Cell<>(11, "ben"));
+        rowsrcc.add(new Cell<>(12, java.sql.Date.valueOf("2000-11-11")));        //2-я строка второй таблицы
+        rowsrcc.add(new Cell<>(13, 3));
+        rowsrcc.add(new Cell<>(14, false));
 
-        d.connectDBs(); // создать таблицу
 
-        d.insertRowDB(); // вставить записи
+        Row row = new Row(1, rowFirst);
+        Row row1 = new Row(2, rowSecond);
 
-        d.searchRows("name", "count", "Diana", 3); // найти поле по 2-м параметрам
+        Row rowtab = new Row(3, rowTab);
+        Row rowsqqq = new Row(4, rowsrcc);
 
-        d.updateRows("count", 2, 1); // изменить запись
 
-        //раскоментируйте код ниже если нужно проверить удаление таблицы или записей
+        ArrayList<Row> rows = new ArrayList<>();
+        rows.add(row);
+        rows.add(row1);
 
-        //  d.transaction(d.deleteAllStrs()); // удалить все записи
+        ArrayList<Row> rowsTab = new ArrayList<>();
+        rowsTab.add(rowtab);
+        rowsTab.add(rowsqqq);
 
-        //d.transaction(d.dropTable());  // удалить таблицу
+        Table table = new Table(1, "friends", fields, rows);                // создание первой таблицы
+
+        Table tablesec = new Table(2, "people", fields1, rowsTab);          //создание второй таблицы
+
+        Service.createTable(table);
+        Service.insertRow(table, row);
+        Service.insertRow(table, row1);
+
+        Service.createTable(tablesec);
+        Service.insertRow(tablesec, rowtab);
+        Service.insertRow(tablesec, rowsqqq);
+
+        DBUtil.bagStatement(Service.SQLscript);     //добавление данных непосредственно в бд
+
+        DBUtil.statement(Service.setField(table, "surname", "patronymic"));
+        DBUtil.statement(Service.searchRows(table, "Nikita", "Obukhov"));
+        DBUtil.statement(Service.updateRow(table, "name", "pupkin", "Drob"));
+
+        DBUtil.statement(Service.truncate(tablesec)); //удаление строк второй таблицы
+        DBUtil.statement(Service.deleteTable(tablesec)); //удаление второй таблицы
 
     }
 }
